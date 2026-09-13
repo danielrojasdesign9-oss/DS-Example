@@ -1,0 +1,13 @@
+{
+  "name": "@clickguard/ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./tokens.css": "./src/tokens/tokens.css"
+  },
+  "scripts": {
+    "build:tokens": "node scripts/build-tokens.mjs"
+  }
+}

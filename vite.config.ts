@@ -1,5 +1,3 @@
-import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
-import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
@@ -203,16 +201,23 @@ function vitePluginStorageProxy(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStorageProxy()];
+const plugins = [react(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStorageProxy()];
 
 export default defineConfig({
   plugins,
   resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
-    },
+    alias: [
+      { find: /^@clickguard\/ui$/, replacement: path.resolve(import.meta.dirname, "packages/ui/src/index.tsx") },
+      { find: /^@clickguard\/ui\/tokens\.css$/, replacement: path.resolve(import.meta.dirname, "packages/ui/src/tokens/tokens.css") },
+      { find: /^@clickguard\/ui\/src\/styles\.css$/, replacement: path.resolve(import.meta.dirname, "packages/ui/src/styles.css") },
+      { find: /^@web$/, replacement: path.resolve(import.meta.dirname, "apps/web/src") },
+      { find: /^@web\/(.*)$/, replacement: `${path.resolve(import.meta.dirname, "apps/web/src")}/$1` },
+      { find: /^@$/, replacement: path.resolve(import.meta.dirname, "client/src") },
+      { find: /^@\/(.*)$/, replacement: `${path.resolve(import.meta.dirname, "client/src")}/$1` },
+      { find: /^@shared$/, replacement: path.resolve(import.meta.dirname, "shared") },
+      { find: /^@shared\/(.*)$/, replacement: `${path.resolve(import.meta.dirname, "shared")}/$1` },
+      { find: /^@assets$/, replacement: path.resolve(import.meta.dirname, "attached_assets") },
+    ],
   },
   envDir: path.resolve(import.meta.dirname),
   root: path.resolve(import.meta.dirname, "client"),

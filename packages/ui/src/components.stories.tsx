@@ -1,0 +1,19 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { ActionBar, Badge, Button, EmptyState, FilterBar, KpiStrip, ReEvaluationCard, RiskGauge, StatusChip, Timeline, VerdictBanner, VisitDetail } from './index';
+
+const meta = { title: 'ClickGuard / Core components', parameters: { layout: 'padded' } } satisfies Meta;
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+export const Buttons: Story = { render: () => <div style={{ display: 'flex', gap: 'var(--cg-space-3)', flexWrap: 'wrap' }}><Button variant="primary">Primary action</Button><Button variant="secondary">Secondary</Button><Button variant="ghost">Quiet action</Button><Button variant="danger">Exclude</Button><Button disabled>Disabled</Button></div> };
+export const Statuses: Story = { render: () => <div style={{ display: 'flex', gap: 'var(--cg-space-4)', flexWrap: 'wrap' }}><StatusChip status="monitoring" substate="awaiting interactions/clicks" /><StatusChip status="monitoring" attention /><StatusChip status="excluded" /><StatusChip status="whitelisted" /></div> };
+export const RiskBands: Story = { render: () => <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--cg-space-3)' }}><RiskGauge band="low" /><RiskGauge band="medium" /><RiskGauge band="high" /><RiskGauge band="high" score={98} detail /></div> };
+export const Verdicts: Story = { render: () => <div style={{ display: 'grid', gap: 'var(--cg-space-3)' }}><VerdictBanner tone="danger">Blocked — bot pattern confirmed.</VerdictBanner><VerdictBanner tone="warning">Under review — mixed signals.</VerdictBanner><VerdictBanner tone="success">Trusted — visitor validated.</VerdictBanner></div> };
+export const Kpis: Story = { render: () => <KpiStrip items={[{ label: 'Blocked visits', value: '142', detail: '▲ 12% vs last 7 days', tone: 'danger', icon: '↘' }, { label: 'Spend avoided', value: '$12,480', detail: 'Auditable paid traffic value', tone: 'success', icon: '$' }, { label: 'Monitoring', value: '328', detail: 'Visitors quietly observed', tone: 'blue', icon: '◌' }, { label: 'Decision accuracy', value: '99.8%', detail: 'Across reviewed traffic', tone: 'violet', icon: '✓' }]} /> };
+export const ReEvaluation: Story = { render: () => <ReEvaluationCard confidence="Medium" prognosis="3+ pages in 7 days clears the concern" diagnostics={['VPN on 2 visits', 'Pricing-only journey']} /> };
+export const VisitEvidence: Story = { render: () => <VisitDetail label="Click speed" value="184ms" meaning="Sustained speed under 300ms is machine-like." diagnostic tone="danger" /> };
+export const EmptyAndZero: Story = { render: () => <div style={{ display: 'grid', gap: 'var(--cg-space-4)' }}><EmptyState /><EmptyState zeroResults onReset={() => undefined} /></div> };
+export const Actions: Story = { render: () => <ActionBar onAction={() => undefined} /> };
+export const TimelineTrail: Story = { render: () => <Timeline visits={[{ id: 'v1', ts: 'Sep 12 · 04:11', channel: 'Paid', page: '/pricing', costUsd: 4.2, signals: [{ label: 'Bot probability', value: 98, note: 'Diagnostic model clue only.', diagnostic: true, tone: 'danger' }, { label: 'Click speed', value: '184ms', note: 'Sustained sub-300ms cadence.' }] }]} burst={{ label: '14 visits · 92 min · 03:37–05:09', detail: '100% bounce · expand to inspect each visit', visits: [] }} /> };
+export const FilterControls: Story = { render: () => <FilterBar status="all" setStatus={() => undefined} channel="all" setChannel={() => undefined} risk="all" setRisk={() => undefined} search="" setSearch={() => undefined} onReset={() => undefined} /> };
+export const Badges: Story = { render: () => <div style={{ display: 'flex', gap: 'var(--cg-space-3)' }}><Badge tone="brand">Paid</Badge><Badge tone="success">Organic</Badge><Badge tone="danger">Blocked</Badge><Badge tone="warning">Needs a look</Badge></div> };

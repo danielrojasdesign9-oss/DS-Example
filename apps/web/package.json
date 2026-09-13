@@ -1,0 +1,14 @@
+{
+  "name": "@clickguard/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clickguard/ui": "workspace:*",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  }
+}
