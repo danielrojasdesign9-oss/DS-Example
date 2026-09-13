@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ActionBar, Badge, Button, EmptyState, FilterBar, KpiStrip, ReEvaluationCard, RiskGauge, StatusChip, Timeline, VerdictBanner, VisitDetail } from './index';
+import { ActionBar, Badge, Button, BurstNode, ChannelChip, ConversionResolution, EmptyState, FilterBar, KpiStrip, PageControls, ReEvaluationCard, RiskGauge, SignalEvidence, SpendChip, StatusChip, Timeline, VerdictBanner, VisitDetail } from './index';
 
 const meta = { title: 'ClickGuard / Core components', parameters: { layout: 'padded' } } satisfies Meta;
 export default meta;
@@ -17,3 +17,8 @@ export const Actions: Story = { render: () => <ActionBar onAction={() => undefin
 export const TimelineTrail: Story = { render: () => <Timeline visits={[{ id: 'v1', ts: 'Sep 12 · 04:11', channel: 'Paid', page: '/pricing', costUsd: 4.2, signals: [{ label: 'Bot probability', value: 98, note: 'Diagnostic model clue only.', diagnostic: true, tone: 'danger' }, { label: 'Click speed', value: '184ms', note: 'Sustained sub-300ms cadence.' }] }]} burst={{ label: '14 visits · 92 min · 03:37–05:09', detail: '100% bounce · expand to inspect each visit', visits: [] }} /> };
 export const FilterControls: Story = { render: () => <FilterBar status="all" setStatus={() => undefined} channel="all" setChannel={() => undefined} risk="all" setRisk={() => undefined} search="" setSearch={() => undefined} onReset={() => undefined} /> };
 export const Badges: Story = { render: () => <div style={{ display: 'flex', gap: 'var(--cg-space-3)' }}><Badge tone="brand">Paid</Badge><Badge tone="success">Organic</Badge><Badge tone="danger">Blocked</Badge><Badge tone="warning">Needs a look</Badge></div> };
+export const ChannelsAndSpend: Story = { name: 'Domain / channels and spend', render: () => <div style={{ display: 'flex', gap: 'var(--cg-space-4)', flexWrap: 'wrap', alignItems: 'center' }}><ChannelChip channel="paid" /><ChannelChip channel="organic" /><ChannelChip channel="direct" /><ChannelChip channel="referral" /><SpendChip amount={4.2} /><SpendChip amount={12480} context="spend-avoided" /></div> };
+export const EvidenceCards: Story = { name: 'Domain / evidence cards', render: () => <div style={{ display: 'grid', gap: 'var(--cg-space-3)', maxWidth: 420 }}><SignalEvidence label="Click speed" value="184ms" meaning="Sustained sub-300ms cadence is machine-like." tone="danger" diagnostic /><SignalEvidence label="Conversion" value="Confirmed" meaning="Positive evidence can reverse an earlier challenge." tone="success" /></div> };
+export const Burst: Story = { name: 'Reasoning / dense journey burst', render: () => <BurstNode count={14} duration="92 min" range="03:37–05:09" bounceRate="100%" onToggle={() => undefined} /> };
+export const ConversionResolved: Story = { name: 'Reasoning / conversion resolution', render: () => <ConversionResolution onOverride={() => undefined} /> };
+export const Pagination: Story = { name: 'Operations / table pagination', render: () => <PageControls page={2} pageCount={4} total={44} pageSize={12} onPageChange={() => undefined} /> };

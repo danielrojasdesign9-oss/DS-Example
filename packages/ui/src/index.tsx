@@ -59,6 +59,38 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
   return <TooltipPrimitive.Provider delayDuration={160}><TooltipPrimitive.Root><TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger><TooltipPrimitive.Portal><TooltipPrimitive.Content className="cg-tooltip" sideOffset={6}>{label}<TooltipPrimitive.Arrow className="cg-tooltip-arrow" /></TooltipPrimitive.Content></TooltipPrimitive.Portal></TooltipPrimitive.Root></TooltipPrimitive.Provider>;
 }
 
+export function ChannelChip({ channel, compact = false }: { channel: 'paid' | 'organic' | 'direct' | 'referral'; compact?: boolean }) {
+  const config = {
+    paid: { label: 'Paid', tone: 'brand' as Tone, icon: <MousePointer2 size={12} />, meaning: 'Paid click · advertiser spend applies' },
+    organic: { label: 'Organic', tone: 'success' as Tone, icon: <Globe2 size={12} />, meaning: 'Organic arrival · no ad spend' },
+    direct: { label: 'Direct', tone: 'neutral' as Tone, icon: <ArrowDown size={12} />, meaning: 'Direct arrival · no ad spend' },
+    referral: { label: 'Referral', tone: 'violet' as Tone, icon: <ChevronRight size={12} />, meaning: 'Referral arrival · no ad spend' },
+  }[channel];
+  return <Tooltip label={config.meaning}><span className={`cg-channel-chip ${compact ? 'is-compact' : ''}`}><span className={`cg-channel-icon ${toneClass[config.tone]}`}>{config.icon}</span>{config.label}</span></Tooltip>;
+}
+
+export function SpendChip({ amount, context = 'paid-visit' }: { amount: number; context?: 'paid-visit' | 'spend-avoided' }) {
+  return <span className={`cg-spend-chip ${context === 'spend-avoided' ? 'is-avoided' : ''}`}><span>$</span>{amount.toFixed(2)}{context === 'spend-avoided' ? ' saved' : ' spend'}</span>;
+}
+
+export function SignalEvidence({ label, value, meaning, diagnostic = false, tone = 'neutral' }: { label: string; value: string | number; meaning: string; diagnostic?: boolean; tone?: Tone }) {
+  return <div className={`cg-signal-evidence ${toneClass[tone]}`}><div className="cg-signal-evidence-head"><span>{label}</span>{diagnostic && <DiagnosticTag>Diagnostic only</DiagnosticTag>}</div><strong>{value}</strong><p>{meaning}</p></div>;
+}
+
+export function BurstNode({ count, duration, range, bounceRate, expanded, onToggle }: { count: number; duration: string; range: string; bounceRate: string; expanded?: boolean; onToggle?: () => void }) {
+  return <div className="cg-burst-node"><button type="button" onClick={onToggle} aria-expanded={expanded}><span className="cg-burst-icon"><Zap size={15} /></span><span><strong>{count} visits · dense journey</strong><small>{duration} · {range} · {bounceRate} bounce</small></span><ChevronDown size={16} className={expanded ? 'is-open' : ''} /></button></div>;
+}
+
+export function ConversionResolution({ onOverride }: { onOverride?: (action: 'review' | 'reblock') => void }) {
+  return <div className="cg-conversion-resolution"><div className="cg-resolution-header"><span className="cg-resolution-icon"><Check size={15} /></span><div><strong>Conversion resolved the challenge</strong><small>Automatic rule applied · visitor removed from exclusion lists</small></div></div><div className="cg-resolution-steps"><span>Perceived as suspicious</span><i>→</i><span>Purchase confirmed</span><i>→</i><strong>Auto-cleared</strong></div>{onOverride && <div className="cg-resolution-actions"><Button size="sm" variant="secondary" onClick={() => onOverride('review')}>Mark for review</Button><Button size="sm" variant="danger" onClick={() => onOverride('reblock')}>Re-block override</Button></div>}</div>;
+}
+
+export function PageControls({ page, pageCount, total, pageSize, onPageChange }: { page: number; pageCount: number; total: number; pageSize: number; onPageChange: (page: number) => void }) {
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  return <nav className="cg-page-controls" aria-label="Visitor table pagination"><span>Showing <strong>{start}–{end}</strong> of {total}</span><div className="cg-page-buttons"><Button variant="ghost" size="sm" disabled={page === 1} onClick={() => onPageChange(page - 1)}>Previous</Button>{Array.from({ length: pageCount }, (_, index) => index + 1).slice(0, 5).map((pageNumber) => <Button key={pageNumber} variant={pageNumber === page ? 'secondary' : 'ghost'} size="sm" aria-current={pageNumber === page ? 'page' : undefined} onClick={() => onPageChange(pageNumber)}>{pageNumber}</Button>)}<Button variant="ghost" size="sm" disabled={page === pageCount || pageCount === 0} onClick={() => onPageChange(page + 1)}>Next <ChevronRight size={12} /></Button></div></nav>;
+}
+
 export function StatusChip({ status, attention = false, substate }: { status: 'monitoring' | 'excluded' | 'whitelisted'; attention?: boolean; substate?: string }) {
   const config = {
     monitoring: { label: attention ? 'Needs a look' : 'Watching', tone: attention ? 'warning' as Tone : 'blue' as Tone, icon: <Eye size={13} /> },

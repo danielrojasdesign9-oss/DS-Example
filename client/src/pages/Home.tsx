@@ -5,14 +5,18 @@ import {
   Badge,
   Button,
   BulkActionsBar,
+  ChannelChip,
   ChevronDown,
+  ConversionResolution,
   Drawer,
   EmptyState,
   FilterBar,
   Globe2,
   IconForSignal,
   KpiStrip,
+  PageControls,
   RiskGauge,
+  SpendChip,
   StatusChip,
   Timeline,
   Tooltip,
@@ -47,6 +51,7 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('lastUpdated');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [page, setPage] = useState(1);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [toast, setToast] = useState<{ message: string; undo?: () => void } | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
@@ -72,14 +77,19 @@ export default function Home() {
     });
   }, [channel, risk, search, sortDirection, sortKey, status, visitors]);
 
+  const pageSize = 12;
+  const pageCount = Math.max(1, Math.ceil(filteredVisitors.length / pageSize));
+  const pagedVisitors = filteredVisitors.slice((page - 1) * pageSize, page * pageSize);
+  useEffect(() => { setPage(1); }, [channel, risk, search, sortDirection, sortKey, status]);
+
   const blockedVisits = visitors.filter((visitor) => visitor.status === 'excluded').reduce((total, visitor) => total + visitor.visits.length, 0);
   const monitoringCount = visitors.filter((visitor) => visitor.status === 'monitoring').length;
-  const selectedAll = filteredVisitors.length > 0 && filteredVisitors.every((visitor) => selected.includes(visitor.id));
+  const selectedAll = pagedVisitors.length > 0 && pagedVisitors.every((visitor) => selected.includes(visitor.id));
 
   const setSort = (key: SortKey) => { if (sortKey === key) setSortDirection((direction) => direction === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDirection('desc'); } };
   const resetFilters = () => { setStatus('all'); setChannel('all'); setRisk('all'); setSearch(''); };
   const toggleSelection = (id: string) => setSelected((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-  const toggleAll = () => setSelected(selectedAll ? [] : filteredVisitors.map((visitor) => visitor.id));
+  const toggleAll = () => setSelected(selectedAll ? selected.filter((id) => !pagedVisitors.some((visitor) => visitor.id === id)) : [...new Set([...selected, ...pagedVisitors.map((visitor) => visitor.id)])]);
 
   const performAction = (ids: string[], action: 'exclude' | 'trust' | 'unblock' | 'whitelist' | 'review') => {
     const previous = visitors;
@@ -119,7 +129,7 @@ export default function Home() {
         <FilterBar status={status} setStatus={setStatus} channel={channel} setChannel={setChannel} risk={risk} setRisk={setRisk} search={search} setSearch={setSearch} onReset={resetFilters} />
         <div className="results-bar"><span aria-live="polite">Showing <strong>{filteredVisitors.length}</strong> of {visitors.length} visitors</span><span className="results-hint"><span className="kbd">/</span> to search <span className="kbd">Esc</span> closes a visitor</span></div>
         {selected.length > 0 && <BulkActionsBar count={selected.length} onAction={(action) => performAction(selected, action)} onExport={exportCsv} />}
-        {filteredVisitors.length === 0 ? <EmptyState zeroResults onReset={resetFilters} /> : <div className="table-card"><table className="traffic-table"><caption className="sr-only">ClickGuard Threat Monitoring visitor traffic</caption><thead><tr><th scope="col" className="check-col"><input type="checkbox" checked={selectedAll} onChange={toggleAll} aria-label="Select all visible visitors" /></th><SortableHeader label="Visitor" sortKey="ip" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /><th scope="col">Status</th><SortableHeader label="Risk" sortKey="risk" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /><SortableHeader label="Visits" sortKey="visits" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /><th scope="col">Lead signal</th><SortableHeader label="First seen" sortKey="firstSeen" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /><SortableHeader label="Last updated" sortKey="lastUpdated" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /></tr></thead><tbody>{filteredVisitors.map((visitor) => <VisitorRow key={visitor.id} visitor={visitor} selected={selected.includes(visitor.id)} onToggle={() => toggleSelection(visitor.id)} onOpen={() => setSelectedVisitor(visitor)} />)}</tbody></table><div className="table-footer"><span>Showing {filteredVisitors.length} visitor{filteredVisitors.length === 1 ? '' : 's'} · page 1 of 3</span><div className="pagination"><Button variant="ghost" size="sm" disabled>Previous</Button><Button variant="secondary" size="sm">1</Button><Button variant="ghost" size="sm">2</Button><Button variant="ghost" size="sm">3</Button><Button variant="ghost" size="sm">Next <ArrowDown size={12} className="rotate-270" /></Button></div></div></div>}
+        {filteredVisitors.length === 0 ? <EmptyState zeroResults onReset={resetFilters} /> : <div className="table-card"><PageControls page={page} pageCount={pageCount} total={filteredVisitors.length} pageSize={pageSize} onPageChange={setPage} /><table className="traffic-table"><caption className="sr-only">ClickGuard Threat Monitoring visitor traffic</caption><thead><tr><th scope="col" className="check-col"><input type="checkbox" checked={selectedAll} onChange={toggleAll} aria-label="Select all visible visitors" /></th><SortableHeader label="Visitor" sortKey="ip" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /><th scope="col">Status</th><SortableHeader label="Risk" sortKey="risk" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /><SortableHeader label="Visits" sortKey="visits" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /><th scope="col">Lead signal</th><SortableHeader label="First seen" sortKey="firstSeen" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /><SortableHeader label="Last updated" sortKey="lastUpdated" sortKeyState={sortKey} sortDirection={sortDirection} setSort={setSort} /></tr></thead><tbody>{pagedVisitors.map((visitor) => <VisitorRow key={visitor.id} visitor={visitor} selected={selected.includes(visitor.id)} onToggle={() => toggleSelection(visitor.id)} onOpen={() => setSelectedVisitor(visitor)} />)}</tbody></table><PageControls page={page} pageCount={pageCount} total={filteredVisitors.length} pageSize={pageSize} onPageChange={setPage} /></div>}
       </section>
     </main>
     {selectedVisitor && <VisitorDrawer visitor={selectedVisitor} onClose={() => setSelectedVisitor(null)} onAction={(action) => performAction([selectedVisitor.id], action)} />}
@@ -135,7 +145,7 @@ function SortableHeader({ label, sortKey, sortKeyState, sortDirection, setSort }
 function VisitorRow({ visitor, selected, onToggle, onOpen }: { visitor: Visitor; selected: boolean; onToggle: () => void; onOpen: () => void }) {
   const totalSpend = visitor.visits.reduce((sum, visit) => sum + (visit.costUsd ?? 0), 0);
   const lastVisit = visitor.visits[visitor.visits.length - 1];
-  return <tr className={selected ? 'is-selected' : ''}><td className="check-col"><input type="checkbox" checked={selected} onChange={onToggle} aria-label={`Select ${visitor.ip}`} /></td><td><button className="visitor-cell" type="button" onClick={onOpen}><span className={`identicon identicon-${avatarSeed(visitor.ip)}`} aria-hidden="true">{visitorInitials(visitor)}</span><span><strong>{visitor.ip}</strong><small>{visitor.geo.city}, {visitor.geo.country} <span>· {visitor.isp}</span></small></span></button></td><td><StatusChip status={visitor.status} attention={visitor.attention} substate={visitor.subState} /></td><td><RiskGauge band={riskBand(visitor.risk)} /></td><td><div className="visit-count"><strong>{visitor.visits.length}</strong><span>{visitor.paidClicks} paid</span>{visitor.visits.length > 10 && <Badge tone="violet">+{visitor.visits.length - 5} burst</Badge>}</div></td><td><Tooltip label="This is the lead signal ClickGuard attached to the journey. Open the visitor to see every contributing signal."><span className="lead-signal"><IconForSignal signal={visitor.leadSignal} /><span>{visitor.leadSignal}</span></span></Tooltip></td><td><span className="date-cell">{formatDate(visitor.firstSeen)}<small>{visitor.visits[0]?.channel === 'paid' ? 'Paid landing' : channelLabel[visitor.visits[0]?.channel ?? 'direct']}</small></span></td><td><Tooltip label={`Last visit: ${lastVisit?.ts ?? 'No visits'} · ${formatMoney(totalSpend)} total paid spend`}><span className="date-cell"><strong>{formatDate(visitor.lastUpdated)}</strong><small>{lastVisit?.ts.split(' · ')[1] ?? '—'} last seen</small></span></Tooltip></td></tr>;
+  return <tr className={selected ? 'is-selected' : ''}><td className="check-col"><input type="checkbox" checked={selected} onChange={onToggle} aria-label={`Select ${visitor.ip}`} /></td><td><button className="visitor-cell" type="button" onClick={onOpen}><span className={`identicon identicon-${avatarSeed(visitor.ip)}`} aria-hidden="true">{visitorInitials(visitor)}</span><span><strong>{visitor.ip}</strong><small>{visitor.geo.city}, {visitor.geo.country} <span>· {visitor.isp}</span></small></span></button></td><td><StatusChip status={visitor.status} attention={visitor.attention} substate={visitor.subState} /></td><td><RiskGauge band={riskBand(visitor.risk)} /></td><td><div className="visit-count"><strong>{visitor.visits.length}</strong><ChannelChip channel={visitor.visits[0]?.channel ?? 'direct'} compact />{visitor.paidClicks > 0 && <SpendChip amount={totalSpend} />}{visitor.visits.length > 10 && <Badge tone="violet">+{visitor.visits.length - 5} burst</Badge>}</div></td><td><Tooltip label="This is the lead signal ClickGuard attached to the journey. Open the visitor to see every contributing signal."><span className="lead-signal"><IconForSignal signal={visitor.leadSignal} /><span>{visitor.leadSignal}</span></span></Tooltip></td><td><span className="date-cell">{formatDate(visitor.firstSeen)}<small>{visitor.visits[0]?.channel === 'paid' ? 'Paid landing' : channelLabel[visitor.visits[0]?.channel ?? 'direct']}</small></span></td><td><Tooltip label={`Last visit: ${lastVisit?.ts ?? 'No visits'} · ${formatMoney(totalSpend)} total paid spend`}><span className="date-cell"><strong>{formatDate(visitor.lastUpdated)}</strong><small>{lastVisit?.ts.split(' · ')[1] ?? '—'} last seen</small></span></Tooltip></td></tr>;
 }
 
 function VisitorDrawer({ visitor, onClose, onAction }: { visitor: Visitor; onClose: () => void; onAction: (action: 'unblock' | 'whitelist' | 'review') => void }) {
